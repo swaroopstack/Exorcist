@@ -1,0 +1,27 @@
+[project]
+name = "exorcist"
+version = "0.1.0"
+description = "Exorcist — exorcise dead apps safely. Find orphaned app data and useless files on Windows."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "exorcist" }]
+dependencies = [
+  "rich>=13",
+  "psutil>=5.9",
+  "send2trash>=1.8",
+  "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pyinstaller>=6"]
+build = ["pyinstaller>=6", "inno-setup>=0"]
+
+[project.scripts]
+exorcist = "exorcist.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
