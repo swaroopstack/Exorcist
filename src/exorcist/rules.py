@@ -41,6 +41,8 @@ class Finding:
     kind: str  # orphan | temp | cache | log | installer | recycle
     reason: str
     risk: str  # Safe | Review | Skip
+    what: str = ""
+    source: str = ""  # known-db | ai-local | ai-cloud | ''
 
 
 def is_blocklisted(path: str) -> bool:
@@ -158,9 +160,11 @@ def classify_stale_installer(path: str, age_days: float) -> Finding | None:
     return None
 
 
-def make_finding(path: str, size: int, age: float, kind: str, reason: str) -> Finding:
+def make_finding(path: str, size: int, age: float, kind: str, reason: str,
+                 what: str = "", source: str = "") -> Finding:
     risk = "Safe" if kind in ("temp", "cache", "log", "recycle") else "Review"
-    return Finding(path=path, size_bytes=size, age_days=age, kind=kind, reason=reason, risk=risk)
+    return Finding(path=path, size_bytes=size, age_days=age, kind=kind,
+                   reason=reason, risk=risk, what=what, source=source)
 
 
 def junk_file_kind(filename: str) -> str | None:

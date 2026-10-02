@@ -23,5 +23,8 @@ exorcist = "exorcist.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+exorcist = ["data/*.yaml"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

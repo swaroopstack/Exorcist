@@ -43,10 +43,28 @@ def collect(roots: dict[str, str] | None = None, use_winget: bool = False,
                 live, why = folder_has_live_exe(child)
                 if live:
                     continue  # exe alive/running => not orphan, skip
-                out.append(make_finding(
-                    child, entry.size_bytes, entry.age_days, "orphan",
-                    f"'{name}' matches no registry/StartMenu/Store app, unused {entry.age_days:.0f}d",
-                ))
+                from .explainer import explain
+
+                what, source, info = explain(name)
+                verdict = info.verdict if info else "unknown"
+                if verdict == "keep":
+                    risk = "Skip"
+                    reason = (f"'{name}' looks like live software ({what}) — skipped. "
+                              f"Unused {entry.age_days:.0f}d but DB says keep.")
+                elif verdict == "unknown":
+                    risk = "Skip"
+                    reason = (f"'{name}' matches no registry/StartMenu/Store app, "
+                              f"unused {entry.age_days:.0f}d — unknown, needs review")
+                else:
+                    risk = "Review"
+                    reason = (f"'{name}' matches no registry/StartMenu/Store app, "
+                              f"unused {entry.age_days:.0f}d")
+                    if info and info.note:
+                        reason += f". {info.note}"
+                f = make_finding(child, entry.size_bytes, entry.age_days, "orphan",
+                                 reason, what=what, source=source)
+                f.risk = risk
+                out.append(f)
 
     # 2. Temp / cache: whole-folder size if over threshold
     for key, kind in [("temp_user", "temp"), ("temp_win", "temp"),
@@ -98,6 +116,11 @@ def cmd_clean(args: argparse.Namespace) -> int:
     findings = collect(use_winget=args.winget, min_mb=args.min_mb, orphan_days=args.orphan_days)
     if args.only:
         findings = [f for f in findings if f.kind in args.only]
+    if not args.include_skip:
+        skipped = [f for f in findings if f.risk == "Skip"]
+        findings = [f for f in findings if f.risk != "Skip"]
+        if skipped:
+            print(f"({len(skipped)} Skip-risk items hidden — re-run with --include-skip to review them)")
     print_table(findings)
     if not findings:
         return 0
@@ -149,6 +172,7 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("--execute", dest="dry_run", action="store_false", help="allow real recycle (still confirms)")
     c.add_argument("--dry-run", dest="dry_run", action="store_true", default=True)
     c.add_argument("--only", nargs="*", default=None, help="filter kinds: orphan temp cache installer")
+    c.add_argument("--include-skip", action="store_true", help="also offer Skip-risk items (unknown/keep) for review")
     c.add_argument("--min-mb", type=float, default=10)
     c.add_argument("--orphan-days", type=float, default=30)
     c.add_argument("--winget", action="store_true")

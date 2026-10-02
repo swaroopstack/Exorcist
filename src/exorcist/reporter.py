@@ -28,11 +28,19 @@ def print_table(findings: list[Finding]) -> None:
     t.add_column("Kind")
     t.add_column("Size", justify="right")
     t.add_column("Unused")
-    t.add_column("Reason")
+    t.add_column("What is it?", overflow="fold")
     t.add_column("Path", overflow="fold")
     for f in sorted(findings, key=lambda x: x.size_bytes, reverse=True):
         style = "green" if f.risk == "Safe" else "yellow" if f.risk == "Review" else "red"
-        t.add_row(f.risk, f.kind, fmt_size(f.size_bytes), f"{f.age_days:.0f}d", f.reason, f.path, style=style)
+        if f.what:
+            what = f.what
+        elif f.kind in ("temp", "cache", "log"):
+            what = {"temp": "Temporary files", "cache": "Cache data", "log": "Log files"}[f.kind]
+        elif f.kind == "installer":
+            what = "Installer file"
+        else:
+            what = "Unknown - needs review"
+        t.add_row(f.risk, f.kind, fmt_size(f.size_bytes), f"{f.age_days:.0f}d", what, f.path, style=style)
     con.print(t)
     con.print("[dim]Review each path. Run `exorcist clean --dry-run` first. Deletes go to Recycle Bin.[/dim]")
 
