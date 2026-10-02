@@ -1,0 +1,607 @@
+# Known AppData/ProgramData folders. Key = normalized folder name (lowercase).
+# verdict: keep (still useful / belongs to live software) | remove (safe leftover) | review
+perplexity:
+  what: Perplexity AI desktop app data
+  belongs_to: Perplexity
+  verdict: review
+  note: Safe to remove if Perplexity is uninstalled; contains caches and login session.
+antigravity:
+  what: Google Antigravity IDE data
+  belongs_to: Google Antigravity
+  verdict: review
+  note: Remove only if Antigravity is uninstalled; holds settings and extensions.
+whesvc:
+  what: Windows Health and Experience service data
+  belongs_to: Microsoft Windows
+  verdict: keep
+  note: System component, do not remove.
+adobe-backup:
+  what: Adobe Creative Cloud backup/sync staging
+  belongs_to: Adobe
+  verdict: review
+  note: Keep if Adobe apps installed; stale copies can go if cloud sync is done.
+mongodbcompass:
+  what: MongoDB Compass GUI data and connections
+  belongs_to: MongoDB
+  verdict: review
+  note: Remove if Compass uninstalled; connection list is lost.
+ms-playwright-go:
+  what: Playwright browser binaries for Go tests
+  belongs_to: Playwright (dev tool)
+  verdict: keep
+  note: Re-downloaded on demand; remove only to reclaim space, tests will refetch.
+ms-playwright:
+  what: Playwright browser binaries
+  belongs_to: Playwright (dev tool)
+  verdict: keep
+  note: Same as above.
+chocolatey:
+  what: Chocolatey package manager repository
+  belongs_to: Chocolatey
+  verdict: keep
+  note: Removing breaks installed packages managed by choco.
+dell:
+  what: Dell SupportAssist / driver data
+  belongs_to: Dell
+  verdict: keep
+  note: Keep on Dell hardware; drivers and support tools use it.
+cursor:
+  what: Cursor AI editor settings and extensions
+  belongs_to: Cursor
+  verdict: keep
+  note: Keep if Cursor is in use.
+discord:
+  what: Discord chat app cache and settings
+  belongs_to: Discord
+  verdict: review
+  note: Safe leftover if Discord uninstalled; otherwise just cache.
+slack:
+  what: Slack workspace cache
+  belongs_to: Slack
+  verdict: review
+  note: Cache rebuilds on launch.
+spotify:
+  what: Spotify music cache
+  belongs_to: Spotify
+  verdict: review
+  note: Offline songs re-download; safe if space needed.
+steam:
+  what: Steam games platform data
+  belongs_to: Valve Steam
+  verdict: keep
+  note: Contains game installs; never bulk-delete.
+epic:
+  what: Epic Games Launcher data
+  belongs_to: Epic Games
+  verdict: keep
+  note: Contains game installs.
+origin:
+  what: EA Origin / EA App data
+  belongs_to: Electronic Arts
+  verdict: review
+  note: Remove if EA App uninstalled.
+uplay:
+  what: Ubisoft Connect data
+  belongs_to: Ubisoft
+  verdict: review
+  note: Remove if Ubisoft Connect uninstalled.
+battle-net:
+  what: Blizzard Battle.net data
+  belongs_to: Blizzard
+  verdict: review
+  note: Remove if Battle.net uninstalled.
+minecraft:
+  what: Minecraft saves and profiles
+  belongs_to: Mojang
+  verdict: keep
+  note: Holds world saves; back up before touching.
+obs-studio:
+  what: OBS Studio scenes and profiles
+  belongs_to: OBS
+  verdict: keep
+  note: Holds streaming scenes; export first.
+vlc:
+  what: VLC media player config and cache
+  belongs_to: VideoLAN
+  verdict: review
+  note: Tiny; safe leftover if VLC gone.
+gimp:
+  what: GIMP image editor profiles
+  belongs_to: GIMP
+  verdict: review
+  note: Brushes and presets live here.
+blender:
+  what: Blender 3D settings and addons
+  belongs_to: Blender Foundation
+  verdict: review
+  note: Keep if Blender in use.
+audacity:
+  what: Audacity audio editor settings
+  belongs_to: Audacity
+  verdict: review
+  note: Safe leftover if uninstalled.
+handbrake:
+  what: HandBrake video presets
+  belongs_to: HandBrake
+  verdict: review
+  note: Safe leftover if uninstalled.
+notion:
+  what: Notion desktop cache
+  belongs_to: Notion
+  verdict: review
+  note: Cache only; notes are in the cloud.
+figma:
+  what: Figma desktop cache and fonts
+  belongs_to: Figma
+  verdict: review
+  note: Cache rebuilds on launch.
+postman:
+  what: Postman API collections cache
+  belongs_to: Postman
+  verdict: review
+  note: Signed-in data syncs; offline scratch may not.
+docker:
+  what: Docker Desktop data and images
+  belongs_to: Docker
+  verdict: keep
+  note: Images are gigabytes; prune via `docker system prune` instead.
+npm:
+  what: Node.js npm cache
+  belongs_to: Node.js
+  verdict: keep
+  note: Use `npm cache clean` instead of deleting.
+yarn:
+  what: Yarn package cache
+  belongs_to: Yarn
+  verdict: keep
+  note: Managed cache; clean via yarn CLI.
+pnpm-store:
+  what: pnpm content-addressable store
+  belongs_to: pnpm
+  verdict: keep
+  note: Shared across projects; use `pnpm store prune`.
+pip:
+  what: Python pip HTTP cache
+  belongs_to: Python
+  verdict: review
+  note: Safe to clear via `pip cache purge`.
+cargo:
+  what: Rust Cargo registry and build cache
+  belongs_to: Rust
+  verdict: keep
+  note: Use `cargo cache` tooling; huge but intentional.
+rustup:
+  what: Rust toolchain installs
+  belongs_to: Rustup
+  verdict: keep
+  note: Toolchains; remove via `rustup toolchain uninstall`.
+go:
+  what: Go build cache and modules
+  belongs_to: Go
+  verdict: keep
+  note: Use `go clean -cache -modcache` instead.
+dotnet:
+  what: .NET SDK NuGet caches
+  belongs_to: Microsoft .NET
+  verdict: keep
+  note: Shared SDK data.
+nuget:
+  what: NuGet package cache
+  belongs_to: Microsoft .NET
+  verdict: review
+  note: Restores on build; safe if space needed.
+gradle:
+  what: Gradle build caches
+  belongs_to: Gradle
+  verdict: keep
+  note: Use `./gradlew clean` per project.
+maven:
+  what: Maven local repository (~/.m2)
+  belongs_to: Apache Maven
+  verdict: keep
+  note: Dependencies re-download; deleting forces full refetch.
+jetbrains:
+  what: JetBrains IDE settings and indexes
+  belongs_to: JetBrains
+  verdict: keep
+  note: Indexes rebuild slowly; keep if IDEs in use.
+vscode:
+  what: VS Code extensions and storage
+  belongs_to: Microsoft VS Code
+  verdict: keep
+  note: Extensions reinstall; keep if in use.
+github-desktop:
+  what: GitHub Desktop repositories cache
+  belongs_to: GitHub
+  verdict: review
+  note: Remove if app uninstalled.
+gitkraken:
+  what: GitKraken profiles
+  belongs_to: GitKraken
+  verdict: review
+  note: Remove if uninstalled.
+sourcetree:
+  what: SourceTree settings
+  belongs_to: Atlassian
+  verdict: review
+  note: Remove if uninstalled.
+filezilla:
+  what: FileZilla site manager and queues
+  belongs_to: FileZilla
+  verdict: review
+  note: Holds saved FTP credentials; export first.
+winscp:
+  what: WinSCP sessions and keys
+  belongs_to: WinSCP
+  verdict: keep
+  note: Holds saved sessions; export first.
+putty:
+  what: PuTTY sessions and host keys
+  belongs_to: PuTTY
+  verdict: keep
+  note: Registry-backed mostly; keep.
+teamviewer:
+  what: TeamViewer config and logs
+  belongs_to: TeamViewer
+  verdict: review
+  note: Remove if uninstalled.
+anydesk:
+  what: AnyDesk config and address book
+  belongs_to: AnyDesk
+  verdict: review
+  note: Remove if uninstalled.
+zoom:
+  what: Zoom meeting cache and logs
+  belongs_to: Zoom
+  verdict: review
+  note: Cache only.
+teams:
+  what: Microsoft Teams cache
+  belongs_to: Microsoft
+  verdict: review
+  note: Notorious gigabyte cache; safe to clear while Teams closed.
+skype:
+  what: Skype history and cache
+  belongs_to: Microsoft
+  verdict: review
+  note: Remove if uninstalled.
+telegram:
+  what: Telegram Desktop media cache
+  belongs_to: Telegram
+  verdict: review
+  note: Media re-downloads from cloud.
+whatsapp:
+  what: WhatsApp Desktop media and backups
+  belongs_to: WhatsApp
+  verdict: review
+  note: Check chat backups before removing.
+signal:
+  what: Signal Desktop messages database
+  belongs_to: Signal
+  verdict: keep
+  note: Encrypted message store; deleting loses history.
+thunderbird:
+  what: Thunderbird mail profiles
+  belongs_to: Mozilla
+  verdict: keep
+  note: Local mail lives here; back up profile first.
+firefox:
+  what: Firefox profiles and cache
+  belongs_to: Mozilla
+  verdict: keep
+  note: Bookmarks and logins live here.
+chrome:
+  what: Google Chrome profile and cache
+  belongs_to: Google
+  verdict: keep
+  note: Use Chrome settings to clear; holds logins.
+edge:
+  what: Microsoft Edge profile and cache
+  belongs_to: Microsoft
+  verdict: keep
+  note: Same as Chrome.
+brave:
+  what: Brave profile, wallet and cache
+  belongs_to: Brave
+  verdict: keep
+  note: Holds crypto wallet; never delete blindly.
+opera:
+  what: Opera profile and cache
+  belongs_to: Opera
+  verdict: keep
+  note: Holds Flow and logins.
+vivaldi:
+  what: Vivaldi profile and cache
+  belongs_to: Vivaldi
+  verdict: keep
+  note: Holds mail and calendar if enabled.
+chromium:
+  what: Chromium test browser data
+  belongs_to: Chromium / Playwright
+  verdict: review
+  note: Test browsers refetch automatically.
+electron:
+  what: Electron app caches
+  belongs_to: Various Electron apps
+  verdict: review
+  note: Shared cache; apps rebuild it.
+nvidia:
+  what: NVIDIA driver and GeForce Experience data
+  belongs_to: NVIDIA
+  verdict: keep
+  note: Driver state; use DDU for clean reinstalls.
+amd:
+  what: AMD driver data
+  belongs_to: AMD
+  verdict: keep
+  note: Same as NVIDIA.
+intel:
+  what: Intel driver and DSA data
+  belongs_to: Intel
+  verdict: keep
+  note: Driver state.
+realtek:
+  what: Realtek audio driver data
+  belongs_to: Realtek
+  verdict: keep
+  note: Driver state.
+lenovo:
+  what: Lenovo Vantage / drivers
+  belongs_to: Lenovo
+  verdict: keep
+  note: Keep on Lenovo hardware.
+hp:
+  what: HP Support Assistant data
+  belongs_to: HP
+  verdict: keep
+  note: Keep on HP hardware.
+asus:
+  what: ASUS Armoury / drivers
+  belongs_to: ASUS
+  verdict: keep
+  note: Keep on ASUS hardware.
+logitech:
+  what: Logitech G Hub profiles
+  belongs_to: Logitech
+  verdict: keep
+  note: Device macros live here.
+razer:
+  what: Razer Synapse profiles
+  belongs_to: Razer
+  verdict: keep
+  note: Cloud-synced, but keep if in use.
+elgato:
+  what: Elgato Stream Deck profiles
+  belongs_to: Elgato
+  verdict: keep
+  note: Scene configs; export first.
+adobe:
+  what: Adobe Creative Cloud shared data
+  belongs_to: Adobe
+  verdict: keep
+  note: Keep if any Adobe app installed.
+autodesk:
+  what: Autodesk licensing and profiles
+  belongs_to: Autodesk
+  verdict: keep
+  note: Licensing breaks if removed.
+unity:
+  what: Unity Hub editors and cache
+  belongs_to: Unity
+  verdict: keep
+  note: Editor installs are huge; remove versions via Hub.
+unreal:
+  what: Unreal Engine vault and shaders
+  belongs_to: Epic Games
+  verdict: keep
+  note: Derived data rebuilds slowly.
+godot:
+  what: Godot editor settings and templates
+  belongs_to: Godot
+  verdict: review
+  note: Small; safe leftover if uninstalled.
+wireshark:
+  what: Wireshark profiles and keys
+  belongs_to: Wireshark
+  verdict: review
+  note: Remove if uninstalled.
+virtualbox:
+  what: VirtualBox VMs and disk images
+  belongs_to: Oracle
+  verdict: keep
+  note: VMs live here; deleting loses machines.
+vmware:
+  what: VMware VMs
+  belongs_to: Broadcom VMware
+  verdict: keep
+  note: Same as VirtualBox.
+hyper-v:
+  what: Hyper-V virtual disks
+  belongs_to: Microsoft
+  verdict: keep
+  note: System VMs.
+wsl:
+  what: WSL distribution disks
+  belongs_to: Microsoft WSL
+  verdict: keep
+  note: Linux filesystems; manage via `wsl --export`.
+android:
+  what: Android SDK and emulator images
+  belongs_to: Google Android
+  verdict: keep
+  note: Emulator images are huge; remove via SDK Manager.
+flutter:
+  what: Flutter SDK artifacts
+  belongs_to: Google Flutter
+  verdict: keep
+  note: Rebuilds via `flutter precache`.
+conda:
+  what: Conda environments and pkgs
+  belongs_to: Anaconda
+  verdict: keep
+  note: Use `conda clean -a` instead.
+mamba:
+  what: Mamba environments
+  belongs_to: Mamba
+  verdict: keep
+  note: Same as conda.
+poetry:
+  what: Poetry virtualenvs and cache
+  belongs_to: Poetry
+  verdict: keep
+  note: Use `poetry cache clear`.
+uv:
+  what: uv Python package cache
+  belongs_to: Astral uv
+  verdict: review
+  note: Rebuilds fast; safe if space needed.
+terraform:
+  what: Terraform providers and state cache
+  belongs_to: HashiCorp
+  verdict: review
+  note: Never delete live `.tfstate`; provider cache is safe.
+aws:
+  what: AWS CLI credentials and cache
+  belongs_to: Amazon
+  verdict: keep
+  note: Holds credentials; review, don't bulk-delete.
+azure:
+  what: Azure CLI tokens and accounts
+  belongs_to: Microsoft
+  verdict: keep
+  note: Holds login tokens.
+gcloud:
+  what: Google Cloud SDK config
+  belongs_to: Google
+  verdict: keep
+  note: Holds auth; keep.
+kubectl:
+  what: Kubernetes kubeconfigs
+  belongs_to: Kubernetes
+  verdict: keep
+  note: Cluster access; keep.
+helm:
+  what: Helm charts cache
+  belongs_to: Helm
+  verdict: review
+  note: Cache refetches.
+kodi:
+  what: Kodi media library and thumbnails
+  belongs_to: Kodi
+  verdict: review
+  note: Library rescans slowly.
+plex:
+  what: Plex server metadata
+  belongs_to: Plex
+  verdict: keep
+  note: Metadata rebuild takes hours.
+qbittorrent:
+  what: qBittorrent resume and logs
+  belongs_to: qBittorrent
+  verdict: review
+  note: Torrent state; keep if seeding.
+utorrent:
+  what: uTorrent state
+  belongs_to: BitTorrent
+  verdict: review
+  note: Remove if uninstalled.
+dropbox:
+  what: Dropbox sync cache
+  belongs_to: Dropbox
+  verdict: keep
+  note: Unsynced files live here; check sync first.
+onedrive:
+  what: OneDrive sync cache
+  belongs_to: Microsoft
+  verdict: keep
+  note: Same as Dropbox.
+googledrive:
+  what: Google Drive sync cache
+  belongs_to: Google
+  verdict: keep
+  note: Same as Dropbox.
+itunes:
+  what: iTunes backups and library
+  belongs_to: Apple
+  verdict: keep
+  note: iPhone backups are huge; manage inside iTunes.
+apple:
+  what: Apple shared software data
+  belongs_to: Apple
+  verdict: keep
+  note: Keep if iTunes/iCloud installed.
+icloud:
+  what: iCloud sync data
+  belongs_to: Apple
+  verdict: keep
+  note: Check sync before touching.
+libreoffice:
+  what: LibreOffice profiles
+  belongs_to: Document Foundation
+  verdict: review
+  note: Safe leftover if uninstalled.
+openoffice:
+  what: OpenOffice profiles
+  belongs_to: Apache
+  verdict: remove
+  note: Abandoned suite; safe leftover.
+evernote:
+  what: Evernote notebooks cache
+  belongs_to: Evernote
+  verdict: review
+  note: Notes sync; offline notebooks may not.
+obsidian:
+  what: Obsidian vaults and plugins
+  belongs_to: Obsidian
+  verdict: keep
+  note: Vaults are your notes; never bulk-delete.
+logseq:
+  what: Logseq graph data
+  belongs_to: Logseq
+  verdict: keep
+  note: Same as Obsidian.
+joplin:
+  what: Joplin notes database
+  belongs_to: Joplin
+  verdict: keep
+  note: Local-first notes; back up first.
+powertoys:
+  what: Microsoft PowerToys settings
+  belongs_to: Microsoft
+  verdict: keep
+  note: Keep if PowerToys in use.
+winget:
+  what: Windows Package Manager cache
+  belongs_to: Microsoft
+  verdict: keep
+  note: Managed cache.
+scoop:
+  what: Scoop package installs
+  belongs_to: Scoop
+  verdict: keep
+  note: Apps live here; uninstall via scoop.
+parsec:
+  what: Parsec streaming config
+  belongs_to: Parsec
+  verdict: review
+  note: Remove if uninstalled.
+moonlight:
+  what: Moonlight game streaming config
+  belongs_to: Moonlight
+  verdict: review
+  note: Remove if uninstalled.
+ds4windows:
+  what: DS4Windows controller profiles
+  belongs_to: DS4Windows
+  verdict: review
+  note: Remove if uninstalled.
+riot:
+  what: Riot Client and Valorant data
+  belongs_to: Riot Games
+  verdict: keep
+  note: Vanguard anti-cheat ties in; uninstall via Riot client.
+hoyoverse:
+  what: HoYoverse game data
+  belongs_to: HoYoverse
+  verdict: keep
+  note: Game installs; huge.
