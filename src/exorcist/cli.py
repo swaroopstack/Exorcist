@@ -10,6 +10,7 @@ from .installed import build_name_index, get_installed_apps
 from .reporter import print_table, write_json
 from .rules import (
     candidate_roots,
+    folder_has_live_exe,
     is_blocklisted,
     looks_orphaned,
     make_finding,
@@ -39,9 +40,12 @@ def collect(roots: dict[str, str] | None = None, use_winget: bool = False,
                 continue
             name = os.path.basename(child.rstrip(os.sep))
             if entry.age_days >= orphan_days and looks_orphaned(name, index):
+                live, why = folder_has_live_exe(child)
+                if live:
+                    continue  # exe alive/running => not orphan, skip
                 out.append(make_finding(
                     child, entry.size_bytes, entry.age_days, "orphan",
-                    f"'{name}' matches no installed app, unused {entry.age_days:.0f}d",
+                    f"'{name}' matches no registry/StartMenu/Store app, unused {entry.age_days:.0f}d",
                 ))
 
     # 2. Temp / cache: whole-folder size if over threshold
