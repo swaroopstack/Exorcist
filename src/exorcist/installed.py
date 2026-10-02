@@ -72,6 +72,50 @@ def _from_program_files() -> list[str]:
     return names
 
 
+def _from_start_menu() -> list[str]:
+    """Collect Start Menu shortcut names — catches apps missing from Uninstall."""
+    names: list[str] = []
+    candidates = [
+        os.path.join(os.environ.get("ProgramData", r"C:\ProgramData"),
+                     r"Microsoft\Windows\Start Menu\Programs"),
+        os.path.join(os.environ.get("APPDATA", ""),
+                     r"Microsoft\Windows\Start Menu\Programs"),
+    ]
+    for base in candidates:
+        if not base or not os.path.isdir(base):
+            continue
+        for root, _, files in os.walk(base):
+            for f in files:
+                if f.lower().endswith(".lnk") or f.lower().endswith(".url"):
+                    stem = os.path.splitext(f)[0].strip()
+                    if stem and stem.lower() not in ("uninstall", "uninstal"):
+                        names.append(stem)
+            # cap walk depth cost: os.walk is fine, Start Menu is small
+    return names
+
+
+def _from_store(timeout: int = 20) -> list[str]:
+    """MS Store / Appx packages via PowerShell. Returns [] on failure."""
+    try:
+        out = subprocess.run(
+            ["powershell", "-NoProfile", "-Command",
+             "Get-AppxPackage | Select-Object -ExpandProperty Name"],
+            capture_output=True, text=True, timeout=timeout,
+        )
+    except Exception:
+        return []
+    if out.returncode != 0:
+        return []
+    names: list[str] = []
+    for line in out.stdout.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        # com.example.app -> words
+        names.append(re.sub(r"[._-]+", " ", line))
+    return names
+
+
 def _from_winget(timeout: int = 15) -> list[str]:
     if not shutil.which("winget"):
         return []
@@ -98,10 +142,13 @@ def _from_winget(timeout: int = 15) -> list[str]:
         return []
 
 
-def get_installed_apps(use_winget: bool = False) -> list[InstalledApp]:
+def get_installed_apps(use_winget: bool = False, use_store: bool = True) -> list[InstalledApp]:
     raw: list[str] = []
     raw.extend(_from_registry())
     raw.extend(_from_program_files())
+    raw.extend(_from_start_menu())
+    if use_store:
+        raw.extend(_from_store())
     if use_winget:
         raw.extend(_from_winget())
     seen: set[str] = set()
