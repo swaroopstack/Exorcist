@@ -1,2 +1,2 @@
-"""WinSweep core package."""
-__version__ = "0.1.0"
+"""Exorcist core package."""
+__version__ = "0.2.1"
