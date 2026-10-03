@@ -55,6 +55,9 @@ python -m exorcist.cli scan --min-mb 50 --json report.json
 python -m exorcist.cli scan --refresh        # rebuild installed-app cache
 python -m exorcist.cli clean --dry-run
 python -m exorcist.cli clean --execute       # interactive, per-item confirm
+python -m exorcist.cli large-files --min-mb 100 --older-than 180d
+python -m exorcist.cli large-files --full --include-models
+python -m exorcist.cli dupes --min-mb 50
 pytest
 ```
 

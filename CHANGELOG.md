@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.3.0
+
+- New `large-files` command: biggest personal files across
+  Documents/Desktop/Downloads/Videos/Music/Pictures, with size/age
+  filters, category labels (video, audio, installer, AI model...),
+  and Ollama model decoding with shared-blob accounting
+- New `dupes` command: byte-for-byte duplicate groups (blake2b, size
+  pre-filter, 4GB hash cap) with keep-one suggestion and reclaim total
+- Defender-style estimates: history-based quote upfront, live ETA with
+  progress bar, perf recorded per scan; `--quick` (default, depth-capped)
+  vs `--full`
+- Risk labels renamed: Safe to Clean / Check First / Skipped
+- Trust packaging: badges, Recycle-Bin banner, safety-label table in README
+
 ## v0.2.1
 
 - MIT LICENSE; repo is legally reusable
