@@ -162,6 +162,39 @@ def get_installed_apps(use_winget: bool = False, use_store: bool = True) -> list
     return apps
 
 
+def get_installed_apps_cached(use_winget: bool = False, use_store: bool = True,
+                                refresh: bool = False) -> list[InstalledApp]:
+    """Same as get_installed_apps but caches the registry/StartMenu/Store
+    result for 24h (winget results are never cached — too volatile)."""
+    if not use_winget and not refresh:
+        try:
+            from .cache import load_cached_names
+
+            cached = load_cached_names()
+        except Exception:
+            cached = None
+        if cached:
+            seen: set[str] = set()
+            apps: list[InstalledApp] = []
+            for r in cached:
+                norm = normalize_app_name(r)
+                if not norm or norm in seen:
+                    continue
+                seen.add(norm)
+                apps.append(InstalledApp(name=r, normalized=norm))
+            if apps:
+                return apps
+    apps = get_installed_apps(use_winget=use_winget, use_store=use_store)
+    if not use_winget:
+        try:
+            from .cache import save_cached_names
+
+            save_cached_names([a.name for a in apps])
+        except Exception:
+            pass
+    return apps
+
+
 def build_name_index(apps: list[InstalledApp]) -> set[str]:
     idx: set[str] = set()
     for a in apps:
