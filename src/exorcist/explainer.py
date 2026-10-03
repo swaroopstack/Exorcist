@@ -71,4 +71,4 @@ def explain(folder_name: str) -> tuple[str, str, KnownInfo | None]:
     for key, info in db.items():
         if key.replace(" ", "") == squashed:
             return info.what, "known-db", info
-    return "Unknown — needs review", "", None
+    return "Unknown - needs review", "", None

@@ -23,7 +23,7 @@ def print_table(findings: list[Finding]) -> None:
     if not findings:
         con.print("[green]No cleanup candidates found.[/green]")
         return
-    t = Table(title=f"Exorcist — {len(findings)} candidates, {fmt_size(sum(f.size_bytes for f in findings))} reclaimable")
+    t = Table(title=f"Exorcist - {len(findings)} candidates, {fmt_size(sum(f.size_bytes for f in findings))} reclaimable")
     t.add_column("Risk", style="bold")
     t.add_column("Kind")
     t.add_column("Size", justify="right")

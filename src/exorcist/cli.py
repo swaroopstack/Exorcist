@@ -49,12 +49,12 @@ def collect(roots: dict[str, str] | None = None, use_winget: bool = False,
                 verdict = info.verdict if info else "unknown"
                 if verdict == "keep":
                     risk = "Skip"
-                    reason = (f"'{name}' looks like live software ({what}) — skipped. "
+                    reason = (f"'{name}' looks like live software ({what}) - skipped. "
                               f"Unused {entry.age_days:.0f}d but DB says keep.")
                 elif verdict == "unknown":
                     risk = "Skip"
                     reason = (f"'{name}' matches no registry/StartMenu/Store app, "
-                              f"unused {entry.age_days:.0f}d — unknown, needs review")
+                              f"unused {entry.age_days:.0f}d - unknown, needs review")
                 else:
                     risk = "Review"
                     reason = (f"'{name}' matches no registry/StartMenu/Store app, "
@@ -120,7 +120,7 @@ def cmd_clean(args: argparse.Namespace) -> int:
         skipped = [f for f in findings if f.risk == "Skip"]
         findings = [f for f in findings if f.risk != "Skip"]
         if skipped:
-            print(f"({len(skipped)} Skip-risk items hidden — re-run with --include-skip to review them)")
+            print(f"({len(skipped)} Skip-risk items hidden - re-run with --include-skip to review them)")
     print_table(findings)
     if not findings:
         return 0
@@ -157,7 +157,7 @@ def cmd_clean(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="exorcist", description="Exorcist — exorcise dead apps safely. Find orphaned app data + junk on Windows.")
+    p = argparse.ArgumentParser(prog="exorcist", description="Exorcist - exorcise dead apps safely. Find orphaned app data + junk on Windows.")
     p.add_argument("-v", "--verbose", action="store_true")
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -181,6 +181,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # Windows consoles default to cp1252, which mangles em-dashes in tables.
+    try:
+        if sys.stdout is not None and hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8")
+        if sys.stderr is not None and hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
     args = build_parser().parse_args(argv)
     return args.func(args)
 
