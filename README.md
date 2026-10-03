@@ -1,9 +1,33 @@
 # Exorcist - exorcise dead apps, safely
 
-Terminal-first Windows cleanup tool. It finds **orphaned app data**
-(folders in AppData/ProgramData left behind after uninstall) and
-**useless files** (Temp, update caches, stale Downloads installers),
-explains what each folder is, and lets you recycle it - never auto-deletes.
+<p>
+  <a href="https://github.com/swaroopstack/Exorcist/blob/main/LICENSE"><img src="https://img.shields.io/github/license/swaroopstack/Exorcist?color=blue" alt="License: MIT" /></a>
+  <a href="https://github.com/swaroopstack/Exorcist/releases/latest"><img src="https://img.shields.io/github/v/release/swaroopstack/Exorcist?label=latest&color=red" alt="Latest release" /></a>
+  <a href="https://github.com/swaroopstack/Exorcist/stargazers"><img src="https://img.shields.io/github/stars/swaroopstack/Exorcist?color=yellow" alt="GitHub stars" /></a>
+</p>
+
+**Free up your Windows drive. Safely.**
+
+Your PC quietly fills up with leftovers from apps you already uninstalled,
+stale installers, and caches you never asked for. Exorcist finds them,
+explains what each one is, and recycles what you approve.
+
+> **Nothing is ever deleted permanently. Everything moves to the Recycle Bin,
+> so anything can come back.**
+
+You do not need to understand any of it to use it. But if you ever want to
+check, every item carries a plain-English explanation and a safety label,
+so nothing gets touched that you cannot see and verify first.
+
+## Safety labels
+
+| Label | Meaning |
+|-------|---------|
+| Safe to Clean | Known temp/cache, safe to remove |
+| Check First | Likely a leftover, confirm before recycling |
+| Skipped | Unknown or live software - hidden from clean unless you ask |
+
+Unidentified folders never auto-delete. Exorcist only offers what it can explain.
 
 ## Safety first
 
@@ -11,7 +35,7 @@ explains what each folder is, and lets you recycle it - never auto-deletes.
 - Items over 500 MB require typing the folder name - no blind `all`
 - Deletes go to the **Recycle Bin** (`send2trash`), plus an optional
   **System Restore Point** offer before any deletion
-- Unknown folders and live software default to **Skip** and stay hidden
+- Unknown folders and live software default to **Skipped** and stay hidden
   from `clean` unless you pass `--include-skip`
 - Hard blocklist: `C:\Windows`, Boot, and other system paths are never offered
 
@@ -42,7 +66,7 @@ pytest
    veto (recent or running); vendor/runtime ignore list
 3. **Explainer** - 120+ entry local `known_folders.yaml` answers
    "What is it?"; unknowns become Skip, never auto-flagged
-4. **Risk** - Safe (temp/cache) / Review (known leftover) / Skip (unknown or keep)
+4. **Risk** - Safe to Clean (temp/cache) / Check First (known leftover) / Skipped (unknown or keep)
 
 ## Build exe
 
