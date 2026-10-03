@@ -6,7 +6,7 @@ import os
 import sys
 
 from .cleaner import safe_delete, setup_logging
-from .installed import build_name_index, get_installed_apps
+from .installed import build_name_index, get_installed_apps_cached
 from .reporter import print_table, write_json
 from .rules import (
     candidate_roots,
@@ -20,9 +20,9 @@ from .scanner import list_child_dirs, scan_folder
 
 
 def collect(roots: dict[str, str] | None = None, use_winget: bool = False,
-            min_mb: float = 10, orphan_days: float = 30) -> list[Finding]:
+            min_mb: float = 10, orphan_days: float = 30, refresh: bool = False) -> list[Finding]:
     roots = roots or candidate_roots()
-    apps = get_installed_apps(use_winget=use_winget)
+    apps = get_installed_apps_cached(use_winget=use_winget, refresh=refresh)
     index = build_name_index(apps)
     min_bytes = int(min_mb * 1024 * 1024)
     out: list[Finding] = []
@@ -103,7 +103,8 @@ def collect(roots: dict[str, str] | None = None, use_winget: bool = False,
 
 def cmd_scan(args: argparse.Namespace) -> int:
     setup_logging(args.verbose)
-    findings = collect(use_winget=args.winget, min_mb=args.min_mb, orphan_days=args.orphan_days)
+    findings = collect(use_winget=args.winget, min_mb=args.min_mb,
+                       orphan_days=args.orphan_days, refresh=args.refresh)
     if args.json:
         write_json(findings, args.json)
         print(f"Wrote {len(findings)} findings to {args.json}")
@@ -113,7 +114,8 @@ def cmd_scan(args: argparse.Namespace) -> int:
 
 def cmd_clean(args: argparse.Namespace) -> int:
     setup_logging(args.verbose)
-    findings = collect(use_winget=args.winget, min_mb=args.min_mb, orphan_days=args.orphan_days)
+    findings = collect(use_winget=args.winget, min_mb=args.min_mb,
+                       orphan_days=args.orphan_days, refresh=args.refresh)
     if args.only:
         findings = [f for f in findings if f.kind in args.only]
     if not args.include_skip:
@@ -130,30 +132,63 @@ def cmd_clean(args: argparse.Namespace) -> int:
             ok, msg = safe_delete(f.path, dry_run=True)
             print(f"  {msg}")
         return 0
-    # --execute: interactive confirm
-    print("\nType the NUMBER to recycle, 'all' for all, or 'q' to quit.")
-    for i, f in enumerate(findings):
-        print(f"  [{i}] {f.path} ({f.kind}, {f.risk})")
-    choice = input("> ").strip().lower()
-    targets: list[Finding] = []
-    if choice == "all":
-        confirm = input(f"Recycle ALL {len(findings)} items to Recycle Bin? Type YES: ").strip()
-        if confirm != "YES":
-            print("Aborted.")
-            return 1
-        targets = findings
-    elif choice == "q":
-        return 0
-    else:
-        try:
-            targets = [findings[int(choice)]]
-        except (ValueError, IndexError):
-            print("Invalid choice.")
-            return 1
-    for f in targets:
+    # --execute: per-item confirm with detail cards.
+    # Large items (>500MB) require typing the folder name: no blind 'all'.
+    from .reporter import fmt_size
+
+    offer_restore_point()
+    print("\nAnswer y/N for each item. 'q' quits. Items over 500MB ask for the folder name.")
+    recycled = 0
+    for f in findings:
+        name = os.path.basename(f.path.rstrip(os.sep))
+        print(f"\n--- {f.path}")
+        print(f"    kind={f.kind} risk={f.risk} size={fmt_size(f.size_bytes)} unused={f.age_days:.0f}d")
+        if f.what:
+            print(f"    what: {f.what}")
+        print(f"    why: {f.reason}")
+        if f.size_bytes >= 500 * 1024 * 1024:
+            answer = input(f"    Type the folder name '{name}' to recycle, else Enter to skip: ").strip()
+            if answer != name:
+                print("    skipped.")
+                continue
+        else:
+            answer = input("    Recycle this to Recycle Bin? [y/N/q]: ").strip().lower()
+            if answer == "q":
+                break
+            if answer != "y":
+                print("    skipped.")
+                continue
         ok, msg = safe_delete(f.path, dry_run=False)
-        print(msg)
+        print(f"    {msg}")
+        if ok:
+            recycled += 1
+    print(f"\nRecycled {recycled} item(s) to Recycle Bin.")
     return 0
+
+
+def offer_restore_point() -> None:
+    """Offer a Windows System Restore Point before any deletion."""
+    try:
+        answer = input("Create a System Restore Point first? [Y/n]: ").strip().lower()
+    except EOFError:
+        return
+    if answer not in ("", "y", "yes"):
+        print("Skipping restore point (your choice - Recycle Bin still allows undo).")
+        return
+    import subprocess
+
+    try:
+        out = subprocess.run(
+            ["powershell", "-NoProfile", "-Command",
+             "Checkpoint-Computer -Description 'Exorcist cleanup' -RestorePointType MODIFY_SETTINGS"],
+            capture_output=True, text=True, timeout=120,
+        )
+        if out.returncode == 0:
+            print("Restore point created.")
+        else:
+            print("Could not create restore point (needs admin?). Continuing - Recycle Bin still allows undo.")
+    except Exception:
+        print("Could not create restore point. Continuing - Recycle Bin still allows undo.")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -166,6 +201,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--min-mb", type=float, default=10, help="minimum folder size in MB (default 10)")
     s.add_argument("--orphan-days", type=float, default=30, help="min unused days to flag orphan (default 30)")
     s.add_argument("--winget", action="store_true", help="also use winget list (slower)")
+    s.add_argument("--refresh", action="store_true", help="rebuild installed-app cache (skips 24h cache)")
     s.set_defaults(func=cmd_scan)
 
     c = sub.add_parser("clean", help="interactive recycle (dry-run default)")
@@ -176,6 +212,7 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("--min-mb", type=float, default=10)
     c.add_argument("--orphan-days", type=float, default=30)
     c.add_argument("--winget", action="store_true")
+    c.add_argument("--refresh", action="store_true", help="rebuild installed-app cache (skips 24h cache)")
     c.set_defaults(func=cmd_clean)
     return p
 
