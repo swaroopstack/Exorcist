@@ -48,15 +48,15 @@ def collect(roots: dict[str, str] | None = None, use_winget: bool = False,
                 what, source, info = explain(name)
                 verdict = info.verdict if info else "unknown"
                 if verdict == "keep":
-                    risk = "Skip"
+                    risk = "Skipped"
                     reason = (f"'{name}' looks like live software ({what}) - skipped. "
                               f"Unused {entry.age_days:.0f}d but DB says keep.")
                 elif verdict == "unknown":
-                    risk = "Skip"
+                    risk = "Skipped"
                     reason = (f"'{name}' matches no registry/StartMenu/Store app, "
                               f"unused {entry.age_days:.0f}d - unknown, needs review")
                 else:
-                    risk = "Review"
+                    risk = "Check First"
                     reason = (f"'{name}' matches no registry/StartMenu/Store app, "
                               f"unused {entry.age_days:.0f}d")
                     if info and info.note:
@@ -119,10 +119,10 @@ def cmd_clean(args: argparse.Namespace) -> int:
     if args.only:
         findings = [f for f in findings if f.kind in args.only]
     if not args.include_skip:
-        skipped = [f for f in findings if f.risk == "Skip"]
-        findings = [f for f in findings if f.risk != "Skip"]
+        skipped = [f for f in findings if f.risk == "Skipped"]
+        findings = [f for f in findings if f.risk != "Skipped"]
         if skipped:
-            print(f"({len(skipped)} Skip-risk items hidden - re-run with --include-skip to review them)")
+            print(f"({len(skipped)} skipped items hidden - re-run with --include-skip to review them)")
     print_table(findings)
     if not findings:
         return 0
@@ -208,7 +208,7 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("--execute", dest="dry_run", action="store_false", help="allow real recycle (still confirms)")
     c.add_argument("--dry-run", dest="dry_run", action="store_true", default=True)
     c.add_argument("--only", nargs="*", default=None, help="filter kinds: orphan temp cache installer")
-    c.add_argument("--include-skip", action="store_true", help="also offer Skip-risk items (unknown/keep) for review")
+    c.add_argument("--include-skip", action="store_true", help="also offer skipped items (unknown/keep) for review")
     c.add_argument("--min-mb", type=float, default=10)
     c.add_argument("--orphan-days", type=float, default=30)
     c.add_argument("--winget", action="store_true")

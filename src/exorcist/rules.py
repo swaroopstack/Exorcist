@@ -40,7 +40,7 @@ class Finding:
     age_days: float
     kind: str  # orphan | temp | cache | log | installer | recycle
     reason: str
-    risk: str  # Safe | Review | Skip
+    risk: str  # Safe to Clean | Check First | Skipped
     what: str = ""
     source: str = ""  # known-db | ai-local | ai-cloud | ''
 
@@ -162,7 +162,7 @@ def classify_stale_installer(path: str, age_days: float) -> Finding | None:
 
 def make_finding(path: str, size: int, age: float, kind: str, reason: str,
                  what: str = "", source: str = "") -> Finding:
-    risk = "Safe" if kind in ("temp", "cache", "log", "recycle") else "Review"
+    risk = "Safe to Clean" if kind in ("temp", "cache", "log", "recycle") else "Check First"
     return Finding(path=path, size_bytes=size, age_days=age, kind=kind,
                    reason=reason, risk=risk, what=what, source=source)
 

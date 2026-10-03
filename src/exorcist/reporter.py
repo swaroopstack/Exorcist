@@ -31,7 +31,7 @@ def print_table(findings: list[Finding]) -> None:
     t.add_column("What is it?", overflow="fold")
     t.add_column("Path", overflow="fold")
     for f in sorted(findings, key=lambda x: x.size_bytes, reverse=True):
-        style = "green" if f.risk == "Safe" else "yellow" if f.risk == "Review" else "red"
+        style = "green" if f.risk == "Safe to Clean" else "yellow" if f.risk == "Check First" else "red"
         if f.what:
             what = f.what
         elif f.kind in ("temp", "cache", "log"):
