@@ -73,6 +73,22 @@ def test_dupes_size_mismatch_no_hash(tmp_path):
     assert groups == []
 
 
+def test_dupes_hardlinks_skipped(tmp_path):
+    import os
+
+    a = tmp_path / "a.bin"
+    a.write_bytes(b"hardlink-content!!")
+    b = tmp_path / "b.bin"
+    try:
+        os.link(str(a), str(b))
+    except OSError:
+        import pytest
+
+        pytest.skip("hardlinks unsupported here")
+    groups, _ = find_duplicates([str(a), str(b)])
+    assert groups == []
+
+
 def test_eta_format():
     assert timing.fmt_eta(10).endswith("sec")
     assert "min" in timing.fmt_eta(300)

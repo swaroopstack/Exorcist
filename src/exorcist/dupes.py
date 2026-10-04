@@ -64,8 +64,24 @@ def find_duplicates(files: list[str], min_bytes: int = 0) -> tuple[list[DupeGrou
         if size > HASH_CAP_BYTES:
             too_big.extend(paths)
             continue
-        by_hash: dict[str, list[str]] = {}
+        # Hardlinks: two names, one body. Deleting one frees nothing,
+        # so collapse same-inode paths to a single representative.
+        unique: list[str] = []
+        seen_inodes: set[tuple[int, int]] = set()
         for fp in paths:
+            try:
+                st = os.stat(fp)
+                key = (st.st_dev, st.st_ino)
+            except OSError:
+                continue
+            if key in seen_inodes:
+                continue
+            seen_inodes.add(key)
+            unique.append(fp)
+        if len(unique) < 2:
+            continue
+        by_hash: dict[str, list[str]] = {}
+        for fp in unique:
             digest = hash_file(fp)
             if digest is None:
                 continue
