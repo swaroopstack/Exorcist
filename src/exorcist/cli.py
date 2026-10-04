@@ -296,10 +296,16 @@ def cmd_clean(args: argparse.Namespace) -> int:
     print_table(findings)
     if not findings:
         return 0
+    from .cleaner import deletion_backend
+
+    backend, why = deletion_backend()
+    if backend == "quarantine":
+        print(f"\nNOTE: {why}")
+        print("Items will move to quarantine (restorable via `exorcist restore`) instead of the Recycle Bin.")
     if args.dry_run:
         print(f"\nDry-run: {len(findings)} items, nothing deleted. Re-run with --execute to recycle.")
         for f in findings:
-            ok, msg = safe_delete(f.path, dry_run=True)
+            ok, msg = safe_delete(f.path, dry_run=True, kind=f.kind)
             print(f"  {msg}")
         return 0
     # --execute: per-item confirm with detail cards.
@@ -328,11 +334,55 @@ def cmd_clean(args: argparse.Namespace) -> int:
             if answer != "y":
                 print("    skipped.")
                 continue
-        ok, msg = safe_delete(f.path, dry_run=False)
+        ok, msg = safe_delete(f.path, dry_run=False, kind=f.kind)
         print(f"    {msg}")
         if ok:
             recycled += 1
     print(f"\nRecycled {recycled} item(s) to Recycle Bin.")
+    return 0
+
+
+def cmd_restore(args: argparse.Namespace) -> int:
+    import datetime as _dt
+
+    from rich.console import Console
+    from rich.table import Table
+
+    from .quarantine import list_quarantine, purge_old, restore_item
+    from .reporter import fmt_size
+
+    setup_logging(args.verbose)
+    purged = purge_old()
+    if purged:
+        print(f"Purged {purged} quarantine entr(ies) older than 30 days.")
+    items = list_quarantine()
+    if not items:
+        print("Quarantine is empty.")
+        return 0
+    con = Console()
+    t = Table(title=f"Exorcist quarantine - {len(items)} item(s)")
+    t.add_column("#", justify="right")
+    t.add_column("Size", justify="right")
+    t.add_column("Quarantined")
+    t.add_column("Original path", overflow="fold")
+    for i, it in enumerate(items):
+        t.add_row(str(i), fmt_size(it.size_bytes),
+                  _dt.datetime.fromtimestamp(it.moved_at).strftime("%Y-%m-%d"),
+                  it.original_path)
+    con.print(t)
+    choice = input("Restore number, 'all', or Enter to quit: ").strip().lower()
+    if not choice:
+        return 0
+    targets = items if choice == "all" else []
+    if not targets:
+        try:
+            targets = [items[int(choice)]]
+        except (ValueError, IndexError):
+            print("Invalid choice.")
+            return 1
+    for it in targets:
+        ok, msg = restore_item(it)
+        print(msg)
     return 0
 
 
@@ -401,6 +451,9 @@ def build_parser() -> argparse.ArgumentParser:
     dp.add_argument("--json", default="", help="write JSON report to file")
     dp.add_argument("--full", action="store_true", help="unlimited depth (default quick: 4 levels)")
     dp.set_defaults(func=cmd_dupes)
+
+    rs = sub.add_parser("restore", help="list and restore quarantined items (disabled-bin fallback)")
+    rs.set_defaults(func=cmd_restore)
     return p
 
 

@@ -1,4 +1,4 @@
-"""Safe deletion: blocklist + Recycle Bin + logging."""
+"""Safe deletion: blocklist + Recycle Bin (or quarantine fallback) + logging."""
 from __future__ import annotations
 
 import logging
@@ -18,14 +18,33 @@ def setup_logging(verbose: bool = False) -> None:
     )
 
 
-def safe_delete(path: str, dry_run: bool = True) -> tuple[bool, str]:
+def deletion_backend() -> tuple[str, str]:
+    """Return ('recycle'|'quarantine', reason). Quarantine when the bin is disabled."""
+    try:
+        from .quarantine import is_bin_disabled
+    except Exception:
+        return "recycle", ""
+    disabled, reason = is_bin_disabled()
+    if disabled:
+        return "quarantine", reason
+    return "recycle", ""
+
+
+def safe_delete(path: str, dry_run: bool = True, kind: str = "") -> tuple[bool, str]:
     """Returns (ok, message). Never deletes blocklisted paths."""
     if is_blocklisted(path):
         return False, f"BLOCKED (system path): {path}"
     if not os.path.exists(path):
         return False, f"missing: {path}"
+    backend, why = deletion_backend()
     if dry_run:
-        return True, f"[dry-run] would recycle: {path}"
+        where = "quarantine" if backend == "quarantine" else "Recycle Bin"
+        return True, f"[dry-run] would move to {where}: {path}"
+    if backend == "quarantine":
+        from .quarantine import quarantine_move
+
+        log.warning("bin disabled (%s), quarantining %s", why, path)
+        return quarantine_move(path, kind=kind)
     try:
         send2trash(path)
         log.info("recycled %s", path)
