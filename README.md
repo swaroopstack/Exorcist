@@ -29,6 +29,12 @@ so nothing gets touched that you cannot see and verify first.
 
 Unidentified folders never auto-delete. Exorcist only offers what it can explain.
 
+## Requirements
+
+- Windows 10 or 11
+- Python 3.10 or newer (`python --version` to check)
+- ~50 MB free for the tool itself
+
 ## Safety first
 
 - Dry-run by default; `clean --execute` confirms **per item**
@@ -61,6 +67,20 @@ python -m exorcist.cli dupes --min-mb 50
 pytest
 ```
 
+- `scan` - orphaned app data + temp/cache + stale installers (read-only, deletes nothing)
+- `clean` - recycle what `scan` found; dry-run unless `--execute`
+- `large-files` - biggest personal files; `--quick` (default, 3 levels deep) vs `--full`, with time estimates
+- `dupes` - byte-identical duplicates with a keep-one suggestion (read-only)
+
+## Example output
+
+```text
+Exorcist - 6 candidates, 4.7 GB reclaimable
+  Check First | orphan    |   1.2 GB | Perplexity AI desktop app data | ...\AppData\Local\Perplexity
+  Check First | installer |   1.1 GB | Installer file                 | ...\Downloads\idea-2026.1.3.exe
+  Safe to Clean | temp    | 375.1 MB | Temporary files                | ...\AppData\Local\Temp
+```
+
 ## How it decides
 
 1. **Installed index** - registry Uninstall + Program Files + Start Menu +
@@ -79,6 +99,23 @@ pyinstaller --name exorcist --onefile --console -p src src/exorcist/cli.py
 ```
 
 > Requires code signing for SmartScreen trust before public release.
+
+## Troubleshooting
+
+- `python : command not found` - install Python from python.org and tick
+  **Add python.exe to PATH** during setup, then reopen the terminal.
+- `No module named 'exorcist'` - you skipped install: run
+  `pip install -e ".[dev]"` from the project folder first.
+- SmartScreen warning on the exe - expected until releases are code-signed;
+  build from source or check the checksum instead.
+- Scan feels slow the first time - the installed-app index builds once and
+  caches for 24h; rescans are much faster. Pass `--refresh` after
+  installing/uninstalling apps.
+
+## FAQ
+
+**Q: Why not Exercist?**
+A: That one deletes your files *and* makes you do push-ups.
 
 ## Changelog
 
