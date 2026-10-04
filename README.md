@@ -112,11 +112,6 @@ pyinstaller --name exorcist --onefile --console -p src src/exorcist/cli.py
   caches for 24h; rescans are much faster. Pass `--refresh` after
   installing/uninstalling apps.
 
-## FAQ
-
-**Q: Why not Exercist?**
-A: That one deletes your files *and* makes you do push-ups.
-
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md).
