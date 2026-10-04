@@ -109,6 +109,90 @@ def cmd_scan(args: argparse.Namespace) -> int:
         write_json(findings, args.json)
         print(f"Wrote {len(findings)} findings to {args.json}")
     print_table(findings)
+    _report_vanished(findings)
+    return 0
+
+
+def _report_vanished(findings: list[Finding]) -> None:
+    """Watcher: diff installed snapshot, surface leftovers of vanished apps."""
+    from .installed import get_installed_apps_cached
+    from .watcher import save_snapshot, vanished_apps
+
+    try:
+        current = {a.normalized for a in get_installed_apps_cached()}
+    except Exception:
+        return
+    gone, _at = vanished_apps(current)
+    save_snapshot(current)
+    if not gone:
+        return
+    print(f"\nUninstalled since last scan: {', '.join(sorted(gone)[:10])}")
+    hits = [f for f in findings if f.kind == "orphan" and any(
+        g in f.path.lower() or g in f.reason.lower() for g in gone)]
+    if hits:
+        from .reporter import fmt_size
+
+        print("Their leftovers, still on disk:")
+        for f in hits[:10]:
+            print(f"  {fmt_size(f.size_bytes)}  {f.path}")
+        print("Run `exorcist leftovers <name>` for a per-path review sheet.")
+    else:
+        print("No leftovers found for them - clean.")
+
+
+def cmd_leftovers(args: argparse.Namespace) -> int:
+    from rich.console import Console
+    from rich.table import Table
+
+    from .leftovers import find_app_traces
+    from .reporter import fmt_size
+
+    setup_logging(args.verbose)
+    traces = find_app_traces(args.app)
+    if not traces:
+        print(f"No traces of '{args.app}' found on disk.")
+        return 0
+    con = Console()
+    reclaim = sum(t.size_bytes for t in traces if t.checked)
+    t = Table(title=f"Leftovers of '{args.app}' - {len(traces)} paths, {fmt_size(reclaim)} pre-checked")
+    t.add_column("Use")
+    t.add_column("Size", justify="right")
+    t.add_column("Unused")
+    t.add_column("Match")
+    t.add_column("What is it?", overflow="fold")
+    t.add_column("Path", overflow="fold")
+    for tr in traces:
+        mark = "x" if tr.checked else "-"
+        style = "yellow" if tr.checked else "dim"
+        t.add_row(mark, fmt_size(tr.size_bytes), f"{tr.age_days:.0f}d",
+                  tr.match, tr.what, tr.path, style=style)
+    con.print(t)
+    con.print("[dim]x = exact match, pre-checked. - = fuzzy, confirm yourself.[/dim]")
+    if args.dry_run:
+        print("\nDry-run: nothing deleted.")
+        return 0
+    offer_restore_point()
+    recycled = 0
+    for tr in traces:
+        if not tr.checked:
+            answer = input(f"Recycle UNCHECKED fuzzy match {tr.path}? [y/N/q]: ").strip().lower()
+            if answer == "q":
+                break
+            if answer != "y":
+                print("    skipped.")
+                continue
+        else:
+            answer = input(f"Recycle {tr.path}? [y/N/q]: ").strip().lower()
+            if answer == "q":
+                break
+            if answer != "y":
+                print("    skipped.")
+                continue
+        ok, msg = safe_delete(tr.path, dry_run=False, kind="orphan")
+        print(f"    {msg}")
+        if ok:
+            recycled += 1
+    print(f"\nRecycled {recycled} item(s).")
     return 0
 
 
@@ -454,6 +538,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     rs = sub.add_parser("restore", help="list and restore quarantined items (disabled-bin fallback)")
     rs.set_defaults(func=cmd_restore)
+
+    lo = sub.add_parser("leftovers", help="per-path leftover sheet for one app")
+    lo.add_argument("app", help="app name, e.g. Discord")
+    lo.add_argument("--execute", dest="dry_run", action="store_false", help="allow real recycle (still confirms per path)")
+    lo.add_argument("--dry-run", dest="dry_run", action="store_true", default=True)
+    lo.set_defaults(func=cmd_leftovers)
     return p
 
 
