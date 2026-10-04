@@ -41,6 +41,9 @@ Unidentified folders never auto-delete. Exorcist only offers what it can explain
 - Items over 500 MB require typing the folder name - no blind `all`
 - Deletes go to the **Recycle Bin** (`send2trash`), plus an optional
   **System Restore Point** offer before any deletion
+- Recycle Bin disabled? Exorcist detects it, quarantines to
+  `%LOCALAPPDATA%\Exorcist\quarantine\` instead (restorable via
+  `exorcist restore`, auto-purged after 30 days) - never silent permanent delete
 - Unknown folders and live software default to **Skipped** and stay hidden
   from `clean` unless you pass `--include-skip`
 - Hard blocklist: `C:\Windows`, Boot, and other system paths are never offered
@@ -71,6 +74,7 @@ pytest
 - `clean` - recycle what `scan` found; dry-run unless `--execute`
 - `large-files` - biggest personal files; `--quick` (default, 3 levels deep) vs `--full`, with time estimates
 - `dupes` - byte-identical duplicates with a keep-one suggestion (read-only)
+- `restore` - list and restore quarantined items (for PCs with Recycle Bin disabled)
 
 ## Example output
 
