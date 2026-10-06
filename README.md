@@ -75,6 +75,7 @@ pytest
 - `large-files` - biggest personal files; `--quick` (default, 3 levels deep) vs `--full`, with time estimates
 - `dupes` - byte-identical duplicates with a keep-one suggestion (read-only)
 - `restore` - list and restore quarantined items (for PCs with Recycle Bin disabled)
+- `leftovers <app>` - per-path leftover sheet for one app (dry-run unless `--execute`)
 
 ## Example output
 

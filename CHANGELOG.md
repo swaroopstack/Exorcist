@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.4.0
+
+- New `leftovers <app>` command: per-path leftover sheet for one app,
+  exact matches pre-checked, fuzzy matches need explicit confirm
+- Install watcher: each `scan` snapshots the installed set and reports
+  apps gone since last time with their leftover paths - no background service
+- Quarantine fallback: disabled Recycle Bin detected via policy registry,
+  items move to `%LOCALAPPDATA%\Exorcist\quarantine\` with manifest,
+  restorable via new `restore` command, auto-purged after 30 days
+- Duplicate finder skips hardlinked pairs so reclaim math stays honest
+- README: requirements, per-command guide, example output, troubleshooting
+
 ## v0.3.0
 
 - New `large-files` command: biggest personal files across
