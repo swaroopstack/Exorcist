@@ -20,6 +20,12 @@ class KnownInfo:
 
 
 def _db_path() -> str:
+    import sys
+
+    # PyInstaller onefile extracts bundled data to sys._MEIPASS at runtime.
+    meipass = getattr(sys, "_MEIPASS", "")
+    if meipass:
+        return os.path.join(meipass, "exorcist", "data", "known_folders.yaml")
     here = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(here, "data", "known_folders.yaml")
 
