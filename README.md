@@ -48,6 +48,25 @@ Unidentified folders never auto-delete. Exorcist only offers what it can explain
   from `clean` unless you pass `--include-skip`
 - Hard blocklist: `C:\Windows`, Boot, and other system paths are never offered
 
+## Install
+
+No Python needed - grab the exe from
+[Releases](https://github.com/swaroopstack/Exorcist/releases/latest):
+
+```powershell
+.\exorcist.exe scan --min-mb 50
+```
+
+Verify the download (each release ships a `.sha256` file):
+
+```powershell
+certutil -hashfile exorcist.exe SHA256
+# compare with the published exorcist.exe.sha256
+```
+
+> The exe is not code-signed yet, so SmartScreen will ask on first run.
+> Click "More info" -> "Run anyway", or build from source below.
+
 ## Install (dev)
 
 ```powershell
@@ -100,7 +119,15 @@ Exorcist - 6 candidates, 4.7 GB reclaimable
 
 ```powershell
 pip install -e ".[build]"
-pyinstaller --name exorcist --onefile --console -p src src/exorcist/cli.py
+python -m PyInstaller exorcist.spec --noconfirm --clean
+# -> dist/exorcist.exe (~20 MB, version-stamped, no Python needed)
+```
+
+Inno Setup installer (needs [Inno Setup 6](https://jrsoftware.org/isinfo.php)):
+
+```powershell
+iscc installer.iss
+# -> Output/Exorcist-Setup-<version>.exe
 ```
 
 > Requires code signing for SmartScreen trust before public release.
