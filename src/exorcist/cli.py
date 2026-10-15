@@ -544,7 +544,17 @@ def build_parser() -> argparse.ArgumentParser:
     lo.add_argument("--execute", dest="dry_run", action="store_false", help="allow real recycle (still confirms per path)")
     lo.add_argument("--dry-run", dest="dry_run", action="store_true", default=True)
     lo.set_defaults(func=cmd_leftovers)
+
+    gu = sub.add_parser("gui", help="open the browser dashboard (localhost only)")
+    gu.add_argument("--port", type=int, default=18751, help="local port (default 18751)")
+    gu.set_defaults(func=cmd_gui)
     return p
+
+
+def cmd_gui(args: argparse.Namespace) -> int:
+    from .gui import cmd_gui as _gui
+
+    return _gui(args)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -556,6 +566,20 @@ def main(argv: list[str] | None = None) -> int:
             sys.stderr.reconfigure(encoding="utf-8")
     except Exception:
         pass
+    if argv is None:
+        argv = sys.argv[1:]
+    if not argv and getattr(sys, "frozen", False):
+        # Double-clicked exe: open the GUI instead of flashing and dying.
+        from .gui import run_server
+
+        server = run_server()
+        print(f"Exorcist GUI at http://127.0.0.1:{server.server_port}/")
+        print("A browser window should open. Close this window to stop.")
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            pass
+        return 0
     args = build_parser().parse_args(argv)
     return args.func(args)
 
